@@ -1,6 +1,7 @@
 package com.codepath.flickstr;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,7 @@ import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 /**
  * Created by nettawang on 6/22/17.
  */
+
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> {
 
@@ -58,16 +60,31 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         holder.tvTitle.setText(movie.getTitle());
         holder.tvOverview.setText(movie.getOverview());
 
+        // determine the current orientation
+        boolean isPortrait = context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+
         //build url for poster image
-        String imageURL = config.getImageURL(config.getPosterSize(), movie.getPosterPath());
+        String imageURL = null;
+
+        //if in portrait mode, load the poster image
+        if (isPortrait){
+            imageURL = config.getImageURL(config.getPosterSize(), movie.getPosterPath());
+        }else {
+            //load the backdrop image
+            imageURL = config.getImageURL(config.getBackdropSize(), movie.getBackdropPath());
+        }
+
+        //get the correct placehodler and imageview for the current orientation
+        int placeholderId = isPortrait ? R.drawable.flicks_movie_placeholder : R.drawable.flicks_backdrop_placeholder;
+        ImageView imageView = isPortrait ? holder.ivPosterImage : holder.ivBackdropImage;
 
         //load image using glide
         Glide.with(context)
                 .load(imageURL)
-                .bitmapTransform(new RoundedCornersTransformation(context, 15, 0))
-                .placeholder(R.drawable.flicks_movie_placeholder)
-                .error(R.drawable.flicks_movie_placeholder)
-                .into(holder.ivPosterImage);
+                .bitmapTransform(new RoundedCornersTransformation(context, 25, 0))
+                .placeholder(placeholderId)
+                .error(placeholderId)
+                .into(imageView);
 
     }
     // returns the total number of items in the list
@@ -83,11 +100,13 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         ImageView ivPosterImage;
         TextView tvTitle;
         TextView tvOverview;
+        ImageView ivBackdropImage;
 
         public ViewHolder(View itemView) {
             super(itemView);
             //lookup view objects by id
             ivPosterImage = (ImageView) itemView.findViewById(R.id.ivPosterImage);
+            ivBackdropImage = (ImageView) itemView.findViewById(R.id.ivBackdropImage);
             tvOverview = (TextView) itemView.findViewById(R.id.tvOverview);
             tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
         }
